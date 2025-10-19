@@ -5,10 +5,14 @@ import cors from "cors";
 import OpenAI from "openai";
 
 dotenv.config();
-
 const app = express();
+
+// serve static files placed in /public
+app.use(express.static('public'));
+
 app.use(cors());
 app.use(express.json());
+
 
 const PORT = process.env.PORT || 3000;
 const SHOPIFY_STORE_URL = process.env.SHOPIFY_STORE_URL;
