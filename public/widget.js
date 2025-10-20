@@ -15,10 +15,10 @@
     return null;
   })();
   const scriptSrc = thisScript && thisScript.src ? thisScript.src : '';
-  const baseUrl = scriptSrc ? scriptSrc.replace(/\/widget\.js(\?.*)?$/,'') : '';
+  //const baseUrl = scriptSrc ? scriptSrc.replace(/\/widget\.js(\?.*)?$/,'') : '';
 
   // If baseUrl couldn't be resolved, you can set it manually here:
-  // const baseUrl = 'https://chatbot-ijwu.onrender.com';
+  const baseUrl = 'https://chatbot-ijwu.onrender.com';
 
   // Create floating button
   const button = document.createElement('button');
