@@ -15,6 +15,7 @@ app.use(express.json());
 
 
 const PORT = process.env.PORT || 3000;
+
 const SHOPIFY_STORE_URL = process.env.SHOPIFY_STORE_URL;
 const SHOPIFY_API_TOKEN = process.env.SHOPIFY_API_TOKEN;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -169,6 +170,7 @@ You are a friendly Shopify assistant.
 // -----------------------------
 // 🔹 Start the Server
 // -----------------------------
+
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
