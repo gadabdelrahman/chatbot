@@ -7,12 +7,16 @@ import OpenAI from "openai";
 dotenv.config();
 const app = express();
 
-// serve static files placed in /public
-app.use(express.static('public'));
-
 app.use(cors());
 app.use(express.json());
 
+// ✅ Serve static files (chat UI)
+app.use(express.static("public"));
+
+// Fallback for direct /chat access
+app.get("/chat", (req, res) => {
+  res.sendFile("index.html", { root: "public/chat" });
+});
 
 const PORT = process.env.PORT || 3000;
 
@@ -65,11 +69,9 @@ app.get("/orders/:orderId", async (req, res) => {
   console.log(`🔍 Searching for order ${orderId}...`);
 
   try {
-    // Fetch a wide range of orders (fulfilled, unfulfilled, etc.)
     const data = await shopifyGet("orders.json?status=any&limit=250");
     const orders = data.orders || [];
 
-    // Match by both “#1001” and “1001”
     const order = orders.find(
       (o) => o.name === `#${orderId}` || o.name === orderId
     );
@@ -78,7 +80,6 @@ app.get("/orders/:orderId", async (req, res) => {
       return res.json({ message: `No order found with ID ${orderId}` });
     }
 
-    // Extract key info
     const fulfillment = order.fulfillments?.[0];
     const shipping = order.shipping_address;
 
@@ -108,7 +109,7 @@ app.get("/orders/:orderId", async (req, res) => {
 });
 
 // -----------------------------
-// 🔹 Chatbot Route (OpenAI + Shopify Integration)
+// 🔹 Chatbot Route
 // -----------------------------
 app.post("/chat", async (req, res) => {
   const { message } = req.body;
@@ -116,7 +117,6 @@ app.post("/chat", async (req, res) => {
   try {
     let context = "";
 
-    // 🛍 Product inquiries
     if (/product|price|item|catalog/i.test(message)) {
       const data = await shopifyGet("products.json");
       const productList =
@@ -129,10 +129,7 @@ app.post("/chat", async (req, res) => {
           )
           .join(", ") || "No products available right now.";
       context = `Available products: ${productList}`;
-    }
-
-    // 📦 Order or shipping inquiries
-    else if (/order|track|status|shipping|delivery/i.test(message)) {
+    } else if (/order|track|status|shipping|delivery/i.test(message)) {
       context = `
 The user is asking about their order or shipping status.
 Ask politely for their order number (like #1001) first.
@@ -141,7 +138,6 @@ Do not make up data — just guide them clearly.
       `;
     }
 
-    // 🧠 Generate OpenAI response
     const aiRes = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -170,7 +166,6 @@ You are a friendly Shopify assistant.
 // -----------------------------
 // 🔹 Start the Server
 // -----------------------------
-
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
