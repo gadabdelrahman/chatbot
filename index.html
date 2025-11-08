@@ -11,24 +11,6 @@
       background-color: #f0f2f5;
     }
 
-    #chat-toggle {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      width: 64px;
-      height: 64px;
-      background: linear-gradient(135deg, #6366f1, #3b82f6);
-      border: none;
-      border-radius: 50%;
-      color: white;
-      font-size: 28px;
-      cursor: pointer;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-      transition: transform 0.3s ease;
-      z-index: 1000;
-    }
-    #chat-toggle:hover { transform: scale(1.1); }
-
     #chat-window {
       position: fixed;
       bottom: 100px;
@@ -39,7 +21,7 @@
       backdrop-filter: blur(10px);
       border-radius: 20px;
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
-      display: none;
+      display: flex;
       flex-direction: column;
       overflow: hidden;
       z-index: 999;
@@ -181,9 +163,6 @@
   </style>
 </head>
 <body>
-
-  <button id="chat-toggle">💬</button>
-
   <div id="chat-window">
     <div id="chat-header">
       <img src="https://i.imgur.com/0y0y0y0.png" alt="Bot Avatar" />
@@ -197,19 +176,12 @@
   </div>
 
   <script>
-    const toggleBtn = document.getElementById("chat-toggle");
     const chatWindow = document.getElementById("chat-window");
     const messagesDiv = document.getElementById("messages");
     const inputEl = document.getElementById("user-input");
     const sendBtn = document.getElementById("send-btn");
 
     const BACKEND_URL = "https://chatbot-ijwu.onrender.com";
- // 🔧 Change this after deployment
-
-    toggleBtn.addEventListener("click", () => {
-      chatWindow.style.display =
-        chatWindow.style.display === "flex" ? "none" : "flex";
-    });
 
     sendBtn.addEventListener("click", sendMessage);
     inputEl.addEventListener("keypress", (e) => {
@@ -222,10 +194,7 @@
       m.innerHTML = text;
       const time = document.createElement("div");
       time.classList.add("timestamp");
-      time.textContent = new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      time.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       m.appendChild(time);
       messagesDiv.appendChild(m);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -239,8 +208,7 @@
 
       const typingDiv = document.createElement("div");
       typingDiv.classList.add("msg", "bot");
-      typingDiv.innerHTML =
-        '<div class="typing"><span></span><span></span><span></span></div>';
+      typingDiv.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
       messagesDiv.appendChild(typingDiv);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
@@ -252,34 +220,24 @@
           const data = await res.json();
           messagesDiv.removeChild(typingDiv);
 
-          if (data.message) {
-            addMessage(data.message, "bot");
-          } else {
+          if (data.message) addMessage(data.message, "bot");
+          else {
             const isFulfilled = data.fulfillment_status === "fulfilled";
             const statusClass = isFulfilled ? "fulfilled" : "pending";
-
             const orderHtml = `
               <b>🧾 Order ${data.name}</b><br>
-              <b>Status:</b> <span class="${statusClass}">
-                ${data.fulfillment_status || "Unfulfilled"}
-              </span> ${isFulfilled ? "✅" : ""}<br>
+              <b>Status:</b> <span class="${statusClass}">${data.fulfillment_status || "Unfulfilled"}</span> ${isFulfilled ? "✅" : ""}<br>
               <b>Payment:</b> ${data.financial_status}<br>
               <b>Total:</b> ${data.total_price}<br><br>
-              <b>📦 Shipping:</b><br>
-              ${data.shipping_address || "No shipping address found"}<br><br>
-              <b>🚚 Tracking:</b><br>
-              ${
+              <b>📦 Shipping:</b><br>${data.shipping_address || "No shipping address found"}<br><br>
+              <b>🚚 Tracking:</b><br>${
                 data.tracking && data.tracking !== "No tracking link yet"
                   ? `<a href="${data.tracking}" target="_blank">${data.tracking}</a>`
                   : "No tracking link yet"
               }<br><br>
-              <b>🛍️ Items:</b><br>
-              ${data.line_items
-                .map(
-                  (i) =>
-                    `• ${i.title} × ${i.quantity} (${i.price} ${data.currency || "EGP"})`
-                )
-                .join("<br>")}
+              <b>🛍️ Items:</b><br>${
+                data.line_items.map(i => `• ${i.title} × ${i.quantity} (${i.price} ${data.currency || "EGP"})`).join("<br>")
+              }
             `;
             addMessage(orderHtml, "bot");
           }
